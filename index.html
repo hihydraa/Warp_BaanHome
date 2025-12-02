@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Warp Screen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .frame {
+      width: 90vw;
+      max-width: 900px;
+      background: linear-gradient(135deg, #ff0066, #ffcc00);
+      padding: 8px;
+      border-radius: 24px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.7);
+    }
+
+    .inner {
+      background: #111;
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .image-wrap {
+      width: 100%;
+      max-height: 60vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .info {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.1rem;
+    }
+
+    .ig {
+      font-weight: 600;
+      color: #ffcc00;
+    }
+
+    .message {
+      margin-top: 4px;
+      font-size: 1.2rem;
+      text-align: left;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="inner">
+      <div class="image-wrap">
+        <img id="warp-image" src="" alt="">
+      </div>
+      <div class="info">
+        <div>
+          <div class="ig" id="warp-ig">@someone</div>
+          <div class="message" id="warp-message">ข้อความจากลูกค้า...</div>
+        </div>
+        <div class="tag">Happy Warp</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; // ← ใส่ URL จาก Apps Script
+
+    let items = [];
+    let currentIndex = 0;
+
+    async function fetchData() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('Error fetching data');
+        items = await res.json();
+        if (!Array.isArray(items)) items = [];
+        if (items.length === 0) {
+          document.getElementById('warp-image').src = '';
+          document.getElementById('warp-ig').textContent = '';
+          document.getElementById('warp-message').textContent = 'ยังไม่มีวาร์ปตอนนี้';
+        } else {
+          currentIndex = 0;
+          renderCurrent();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderCurrent() {
+      if (items.length === 0) return;
+      const item = items[currentIndex];
+
+      // ปรับข้อความ ถ้าคุณมีฟิลด์ message แยกในฐานข้อมูล ค่อยมาแทนที่ตรงนี้
+      const ig = item.ig || '';
+      const msg = 'ขอบคุณที่ส่งวาร์ปจาก ' + (ig || 'ลูกค้าท่านพิเศษ');
+
+      document.getElementById('warp-image').src = item.imageUrl;
+      document.getElementById('warp-ig').textContent = ig ? '@' + ig : '';
+      document.getElementById('warp-message').textContent = msg;
+
+      currentIndex = (currentIndex + 1) % items.length;
+    }
+
+    // แสดงสลับภาพทุก 20 วินาที
+    setInterval(renderCurrent, 20000);
+
+    // โหลดข้อมูลครั้งแรก แล้วรีเฟรชทุก 60 วินาที
+    fetchData();
+    setInterval(fetchData, 60000);
+  </script>
+</body>
+</html>
