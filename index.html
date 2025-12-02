@@ -190,92 +190,132 @@
   </div>
 
 
-  <script>
-    // ======= CONFIG =======
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyPe0m5QIrapr1sThYjwTHRASCXhrOf9qTMcRwKrNyPfCCdYvOjT7xS5drG7840O6-ztg/exec';   // ← ใส่ Web App URL จาก Apps Script
-    const DISPLAY_INTERVAL_MS = 30000;         // แสดงรายการละ 30 วิ
-    const REFRESH_INTERVAL_MS = 30000;         // ดึงข้อมูลใหม่ทุก 30 วิ
+<script>
+  // ======= CONFIG =======
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyPe0m5QIrapr1sThYjwTHRASCXhrOf9qTMcRwKrNyPfCCdYvOjT7xS5drG7840O6-ztg/exec';
+  const DISPLAY_INTERVAL_MS = 30000;  // แต่ละภาพอยู่บนจอ 30 วิ
+  const REFRESH_INTERVAL_MS = 5000;   // ดึงข้อมูลจาก Google Sheet ทุก 5 วิ
 
-    let items = [];
-    let currentIndex = 0;
-    let lastSignature = '';
+  let items = [];           // ข้อมูลทั้งหมดที่ approved
+  let shownKeys = new Set(); // เก็บรายการที่แสดงไปแล้วใน “รอบนี้”
 
-    const imgEl = document.getElementById('warp-image');
-    const igEl  = document.getElementById('warp-ig');
-    const msgEl = document.getElementById('warp-message');
+  const imgEl = document.getElementById('warp-image');
+  const igEl  = document.getElementById('warp-ig');
+  const msgEl = document.getElementById('warp-message');
 
-    function showEmpty() {
-      imgEl.src = '';
-      igEl.textContent  = '';
-      msgEl.textContent = 'ยังไม่มีวาร์ปในตอนนี้';
+  function makeKey(item) {
+    // ใช้ timestamp + ig + imageUrl เป็น “id” อ้างอิงแถว
+    return (item.timestamp || '') + '|' + (item.ig || '') + '|' + (item.imageUrl || '');
+  }
+
+  function showEmpty() {
+    imgEl.src = '';
+    igEl.textContent  = '';
+    msgEl.textContent = 'ยังไม่มีวาร์ปในตอนนี้';
+  }
+
+  // ดึงข้อมูลจาก Apps Script → Google Sheet
+  async function fetchData() {
+    try {
+      const res = await fetch(API_URL + '?t=' + Date.now());
+      if (!res.ok) throw new Error('Fetch error');
+
+      let data = await res.json();
+      let rows = Array.isArray(data) ? data : [];
+
+      // เอาเฉพาะ status = approved
+      rows = rows.filter(r => (r.status || 'approved') === 'approved');
+
+      // เรียงตามเวลา (เก่า → ใหม่)
+      rows.sort((a, b) => {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return ta - tb;
+      });
+
+      items = rows;
+      // ไม่แตะจอที่กำลังโชว์อยู่ ปล่อยให้จบ 30 วิของมันไปก่อน
+
+    } catch (err) {
+      console.error('fetchData error:', err);
     }
+  }
 
-    async function fetchData() {
-      try {
-        const res = await fetch(API_URL + '?t=' + Date.now());
-        if (!res.ok) throw new Error('Fetch error');
-        let data = await res.json();
+  // เลือกรายการถัดไปตาม logic: ลูกค้าใหม่ลัดคิวก่อน
+  function pickNextItem() {
+    if (!items || items.length === 0) return null;
 
-        let rows = Array.isArray(data) ? data : [];
-        rows = rows.filter(r => (r.status || 'approved') === 'approved');
+    // แบ่งเป็น 2 กลุ่ม: ยังไม่เคยโชว์, เคยโชว์แล้ว
+    const notShown = [];
+    const alreadyShown = [];
 
-        rows.sort((a, b) => {
-          const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-          const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-          return ta - tb;
-        });
-
-        if (rows.length === 0) {
-          if (items.length === 0) showEmpty();
-          return;
-        }
-
-        const sig = JSON.stringify(
-          rows.map(r => (r.timestamp || '') + '|' + (r.ig || '') + '|' + (r.imageUrl || ''))
-        );
-        if (sig === lastSignature) return;
-
-        items = rows;
-        lastSignature = sig;
-        currentIndex = 0;
-        renderCurrent(true);
-
-      } catch (err) {
-        console.error('fetchData error:', err);
+    for (const it of items) {
+      const key = makeKey(it);
+      if (!shownKeys.has(key)) {
+        notShown.push(it);
+      } else {
+        alreadyShown.push(it);
       }
     }
 
-    function renderCurrent(withAnim = false) {
-      if (!items || items.length === 0) {
-        showEmpty();
-        return;
-      }
-
-      const item = items[currentIndex];
-
-      const ig  = item.ig || '';
-      const msg = item.message || '';
-      const img = item.imageUrl || '';
-
-      imgEl.src = img;
-      igEl.textContent  = ig || '';
-      msgEl.textContent = msg || '';
-
-      if (withAnim) {
-        [imgEl, igEl, msgEl].forEach(el => {
-          el.classList.remove('fade-in');
-          void el.offsetWidth;
-          el.classList.add('fade-in');
-        });
-      }
-
-      currentIndex = (currentIndex + 1) % items.length;
+    let candidateList;
+    if (notShown.length > 0) {
+      // มีลูกค้าใหม่หรือรายการที่ยังไม่เคยโชว์ → เลือกจากกลุ่มนี้ก่อน
+      candidateList = notShown;
+    } else {
+      // ทุกตัวใน items ถูกโชว์ไปแล้ว → ล้างรอบ แล้วเล่นวนใหม่
+      shownKeys.clear();
+      candidateList = items;
     }
 
-    fetchData();
-    setInterval(fetchData, REFRESH_INTERVAL_MS);
-    setInterval(() => renderCurrent(true), DISPLAY_INTERVAL_MS);
-  </script>
+    // จะเลือกตัวไหนใน candidateList: 
+    // ถ้าอยากสุ่มให้กระจาย ใช้ random / ถ้าอยากตามเวลา ใช้ตัวแรก
+    const idx = Math.floor(Math.random() * candidateList.length);
+    const nextItem = candidateList[idx];
+
+    shownKeys.add(makeKey(nextItem));
+    return nextItem;
+  }
+
+  function renderItem(item) {
+    if (!item) {
+      showEmpty();
+      return;
+    }
+
+    const ig  = item.ig || '';
+    const msg = item.message || '';
+    const img = item.imageUrl || '';
+
+    imgEl.src = img;
+    igEl.textContent  = ig || '';
+    msgEl.textContent = msg || '';
+
+    [imgEl, igEl, msgEl].forEach(el => {
+      el.classList.remove('fade-in');
+      void el.offsetWidth;          // trick รีเซ็ต animation
+      el.classList.add('fade-in');
+    });
+  }
+
+  // loop แสดงผล: ทุกครั้งจะเลือก item ใหม่แล้ว schedule ตัวเองอีกที
+  async function renderLoop() {
+    const nextItem = pickNextItem();
+    renderItem(nextItem);
+    setTimeout(renderLoop, DISPLAY_INTERVAL_MS);
+  }
+
+  // ======= เริ่มทำงาน =======
+  async function init() {
+    await fetchData();                  // ดึงข้อมูลรอบแรก
+    if (!items.length) showEmpty();     // ถ้ายังไม่มีข้อมูล
+    renderLoop();                       // เริ่ม loop แสดงผล
+    setInterval(fetchData, REFRESH_INTERVAL_MS);  // ดึงข้อมูลเรื่อย ๆ
+  }
+
+  init();
+</script>
+
 
   
 
