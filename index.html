@@ -1,244 +1,194 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>Lucky Warp Screen</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<title>Lucky Warp Screen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+<style>
+  * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
 
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top left, #262c4a 0%, #111320 45%, #050712 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 32px;
-      color: #f9fafb;
-    }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at top left, #2e335a 0%, #171b2e 50%, #0c0f1a 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .wrap {
-      width: 100%;
-      max-width: 1400px;
-      height: 80vh;
-      max-height: 800px;
-      background: rgba(10, 12, 24, 0.9);
-      border-radius: 32px;
-      display: flex;
-      padding: 32px 40px;
-      gap: 32px;
-      box-shadow:
-        0 24px 60px rgba(0,0,0,0.7),
-        0 0 0 2px rgba(255,255,255,0.04);
-    }
+  .wrap {
+    width: 96%;
+    max-width: 1700px;
+    height: 85vh;
+    background: rgba(10, 12, 24, 0.92);
+    border-radius: 36px;
+    padding: 40px;
+    display: flex;
+    gap: 40px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  }
 
-    /* ฝั่งรูปซ้าย */
-    .image-panel {
-      flex: 0 0 35%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+  /* รูปลูกค้า */
+  .image-panel {
+    flex: 0 0 45%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .image-frame {
-      width: 100%;
-      max-width: 430px;
-      aspect-ratio: 4 / 5;   /* 1080x1350 (Portrait) */
-      border-radius: 32px;
-      overflow: hidden;
-      background: #050816;
-      border: 4px solid rgba(255,255,255,0.15);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+  .image-frame {
+    width: 100%;
+    max-width: 650px;
+    aspect-ratio: 4 / 5;   /* Portrait */
+    border-radius: 32px;
+    overflow: hidden;
+    background: #000;
+    border: 6px solid rgba(255,255,255,0.12);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+  }
 
-    .image-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;   /* ✅ แก้ไม่ให้รูปพัง / ยืด */
-      background: #000;
-    }
+  .image-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
-    /* ฝั่งข้อความขวา */
-    .text-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: 18px;
-      padding-right: 32px;
-      position: relative;      /* ✅ ใช้เป็น anchor ให้ promo ด้านล่างขวา */
-    }
+  /* ฝั่งข้อความ */
+  .text-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    position: relative;
+  }
 
-    .ig-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
+  .ig-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
 
-    .ig-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: radial-gradient(circle at 30% 30%, #fffbf0 0%, #ff0069 35%, #ff8a00 70%, #ffd600 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 20px rgba(255, 0, 120, 0.7);
-    }
+  .ig-logo {
+    width: 68px;
+    height: 68px;
+    border-radius: 16px;
+    background: radial-gradient(circle at 30% 30%, #fff 0%, #ff0069 30%, #ff8a00 70%, #ffd600 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 22px rgba(255, 0, 120, 0.7);
+  }
 
-    .ig-logo-icon {
-      width: 22px;
-      height: 22px;
-      background: url("https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png") center/cover no-repeat;
-      filter: drop-shadow(0 0 4px rgba(0,0,0,0.6));
-    }
+  .ig-logo-icon {
+    width: 36px;
+    height: 36px;
+    background: url("https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png") center/cover no-repeat;
+  }
 
-    .ig-name {
-      font-size: 3rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-    }
+  /* ⭐ IG name ใหญ่ขึ้น */
+  .ig-name {
+    font-size: 4rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+  }
 
-    .message {
-      font-size: 2rem;
-      line-height: 1.35;
-      font-weight: 700;
-      color: #ffe66b;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-      max-width: 90%;
-    }
+  /* ⭐ ข้อความใหญ่ขึ้น */
+  .message {
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: #ffe66b;
+    line-height: 1.4;
+    margin-top: 12px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  }
 
-    /* 🔻 PROMO: เลื่อนมุมขวาล่าง */
-    .promo-panel {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding-bottom: 8px;
-    }
+  /* ⭐ QR ใหญ่ขึ้นมุมล่างขวา */
+  .promo-panel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 10px;
+  }
 
-    .qr-panel {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+  .qr-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 0 22px rgba(0,0,0,0.7);
+  }
 
-    .qr-img {
-      width: 96px;
-      height: 96px;
-      border-radius: 16px;
-      background: #fff;
-      padding: 6px;
-      box-shadow: 0 0 18px rgba(0,0,0,0.7);
-    }
+  .qr-text {
+    font-size: 1.8rem;
+    line-height: 1.4;
+  }
 
-    .qr-text {
-      font-size: 1.05rem;
-      line-height: 1.4;
-      color: #e5e7eb;
-    }
+  .qr-text span {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffb347;
+    text-shadow: 0 0 12px rgba(255,179,71,0.9);
+  }
 
-    .qr-text span {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #ffb347;
-      text-shadow: 0 0 10px rgba(255,179,71,0.7);
-      white-space: nowrap;
-    }
+  .tag-lucky {
+    padding: 12px 26px;
+    border-radius: 999px;
+    font-size: 1.35rem;
+    background: linear-gradient(135deg, #ff4b8b, #ffb347);
+    color: #111;
+    font-weight: 800;
+    box-shadow: 0 0 20px rgba(255,99,132,0.6);
+  }
 
-    .tag-lucky {
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 1rem;
-      background: linear-gradient(135deg, #ff4b8b, #ffb347);
-      color: #111827;
-      font-weight: 700;
-      box-shadow: 0 0 18px rgba(255,99,132,0.6);
-    }
+  /* Animation */
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
 
-    /* Animation เวลาเปลี่ยนภาพ */
-    .fade-in {
-      animation: fadeIn 0.6s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0);   }
-    }
-
-    @media (max-width: 900px) {
-      .wrap {
-        flex-direction: column;
-        height: auto;
-        max-height: none;
-      }
-      .image-panel {
-        flex: none;
-        justify-content: center;
-      }
-      .text-panel {
-        padding-right: 0;
-      }
-      .ig-name {
-        font-size: 3rem;
-      }
-      .message {
-        font-size: 2rem;
-      }
-      .promo-panel {
-        position: static;
-        margin-top: 28px;
-        justify-content: space-between;
-      }
-    }
-  </style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+</style>
 </head>
 
 <body>
   <div class="wrap">
-    <!-- รูปลูกค้า -->
     <div class="image-panel">
       <div class="image-frame">
-        <img id="warp-image" src="" alt="">
+        <img id="warp-image" src="">
       </div>
     </div>
 
-    <!-- ข้อความ + QR -->
     <div class="text-panel">
       <div class="ig-header">
-        <div class="ig-logo">
-          <div class="ig-logo-icon"></div>
-        </div>
+        <div class="ig-logo"><div class="ig-logo-icon"></div></div>
         <div class="ig-name" id="warp-ig">@someone</div>
       </div>
 
       <div class="message" id="warp-message">ข้อความจากลูกค้า...</div>
 
-      <!-- ✅ โปรโมต SCAN เลย มุมขวาล่าง -->
       <div class="promo-panel">
-        <div class="qr-panel">
-          <img class="qr-img" src="https://hihydraa.github.io/Warp_BaanHome/qrcode_form.png
-" alt="QR Warp Form">
-          <div class="qr-text">
-            แจกวาร์ปขึ้นจอ<br>
-            <span>SCAN เลย</span>
-          </div>
+        <img class="qr-img" src="https://hihydraa.github.io/Warp_BaanHome/qrcode_form.png">
+
+        <div class="qr-text">แจกวาร์ปขึ้นจอ<br>
+          <span>SCAN เลย</span>
         </div>
+
         <div class="tag-lucky">Lucky Warp</div>
       </div>
     </div>
   </div>
+
 
   <script>
     // ======= CONFIG =======
@@ -326,5 +276,8 @@
     setInterval(fetchData, REFRESH_INTERVAL_MS);
     setInterval(() => renderCurrent(true), DISPLAY_INTERVAL_MS);
   </script>
+
+  
+
 </body>
 </html>
