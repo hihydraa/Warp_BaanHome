@@ -2,49 +2,54 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>Warp Screen</title>
+  <title>Lucky Warp Screen</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #000;
-      color: #fff;
+      background: radial-gradient(circle at center, #2a2a40 0%, #1a1a28 70%, #111119 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      padding: 40px;
+      color: #fff;
     }
 
+    /* MAIN FRAME */
     .frame {
       width: 90vw;
-      max-width: 900px;
-      background: linear-gradient(135deg, #ff0066, #ffcc00);
-      padding: 8px;
-      border-radius: 24px;
-      box-shadow: 0 0 40px rgba(0,0,0,0.7);
+      max-width: 1000px;
+      padding: 12px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #ff0080, #ff8c00);
+      box-shadow: 0 0 40px rgba(255, 80, 150, 0.4), 0 0 60px rgba(255,140,0,0.25);
     }
 
     .inner {
-      background: #111;
-      border-radius: 20px;
+      background: #1f1f2a;
+      border-radius: 22px;
       padding: 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 18px;
     }
 
+    /* IMAGE SECTION */
     .image-wrap {
       width: 100%;
       max-height: 60vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
       border-radius: 16px;
-      border: 2px solid rgba(255,255,255,0.2);
+      overflow: hidden;
+      border: 3px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.3);
     }
 
     .image-wrap img {
@@ -53,127 +58,110 @@
       object-fit: contain;
     }
 
-    .info {
+    /* INFO SECTION */
+    .info-bar {
       width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      font-size: 1.1rem;
     }
 
-    .ig {
-      font-weight: 600;
-      color: #ffcc00;
+    .ig-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ig-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffd86b;
+    }
+
+    .ig-row img {
+      width: 28px;
+      height: 28px;
     }
 
     .message {
-      margin-top: 4px;
-      font-size: 1.2rem;
-      text-align: left;
+      font-size: 1.3rem;
       line-height: 1.4;
-      word-break: break-word;
+      color: #e8e8e8;
+      max-width: 90%;
     }
 
+    /* TAG */
     .tag {
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      font-size: 0.9rem;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(6px);
     }
   </style>
 </head>
+
 <body>
   <div class="frame">
     <div class="inner">
       <div class="image-wrap">
         <img id="warp-image" src="" alt="">
       </div>
-      <div class="info">
-        <div>
-          <div class="ig" id="warp-ig"></div>
-          <div class="message" id="warp-message"></div>
+
+      <div class="info-bar">
+        <div class="ig-section">
+          <div class="ig-row">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png">
+            <span id="warp-ig">@someone</span>
+          </div>
+          <div class="message" id="warp-message">ข้อความจากลูกค้า...</div>
         </div>
-        <div class="tag">Happy Warp</div>
+
+        <div class="tag">Lucky Warp</div>
       </div>
     </div>
   </div>
 
-  <script>
-    // *** แก้ตรงนี้ให้เป็น  Web App ของ Apps Script ที่มี doGet ส่ง JSON ***
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyPe0m5QIrapr1sThYjwTHRASCXhrOf9qTMcRwKrNyPfCCdYvOjT7xS5drG7840O6-ztg/exec';
+<script>
+  // ====== CONFIG ======
+  const API_URL = 'YOUR_API_URL_HERE'; 
+  const DISPLAY_INTERVAL_MS = 30000;
+  const REFRESH_INTERVAL_MS = 60000;
 
-    let items = [];
-    let currentIndex = 0;
+  let items = [];
+  let currentIndex = 0;
 
-    async function fetchData() {
-      try {
-        const res = await fetch(API_URL + '?t=' + Date.now()); // กัน cache
-        if (!res.ok) throw new Error('Error fetching data: ' + res.status);
-        const data = await res.json();
-
-        if (!Array.isArray(data)) {
-          console.error('Invalid data', data);
-          return;
-        }
-
-        // เรียงตามเวลา เผื่อ backend ไม่ได้เรียงมาให้
-        items = data.slice().sort((a, b) => {
-          const ta = new Date(a.timestamp || 0).getTime();
-          const tb = new Date(b.timestamp || 0).getTime();
-          return ta - tb;
-        });
-
-        if (items.length === 0) {
-          showEmpty();
-        } else {
-          currentIndex = 0;
-          renderCurrent();
-        }
-      } catch (err) {
-        console.error(err);
-      }
+  async function fetchData() {
+    try {
+      const res = await fetch(API_URL + '?t=' + Date.now());
+      const data = await res.json();
+      items = Array.isArray(data) ? data : [];
+      if (items.length > 0) renderCurrent();
+    } catch (err) {
+      console.error(err);
     }
+  }
 
-    function showEmpty() {
-      const imgEl = document.getElementById('warp-image');
-      const igEl = document.getElementById('warp-ig');
-      const msgEl = document.getElementById('warp-message');
+  function renderCurrent() {
+    if (items.length === 0) return;
 
-      imgEl.src = '';
-      igEl.textContent = '';
-      msgEl.textContent = 'ยังไม่มีวาร์ปตอนนี้';
-    }
+    const item = items[currentIndex];
 
-    function renderCurrent() {
-      if (!items || items.length === 0) {
-        showEmpty();
-        return;
-      }
+    document.getElementById('warp-image').src = item.imageUrl;
+    document.getElementById('warp-ig').textContent = '@' + (item.ig || 'unknown');
+    document.getElementById('warp-message').textContent = item.message || '';
 
-      const item = items[currentIndex];
+    currentIndex = (currentIndex + 1) % items.length;
+  }
 
-      const ig  = item.ig || '';
-      const msg = item.message || '';
-      const img = item.imageUrl || '';
+  setInterval(renderCurrent, DISPLAY_INTERVAL_MS);
+  setInterval(fetchData, REFRESH_INTERVAL_MS);
 
-      const imgEl = document.getElementById('warp-image');
-      const igEl  = document.getElementById('warp-ig');
-      const msgEl = document.getElementById('warp-message');
-
-      imgEl.src = img;
-      igEl.textContent  = ig ? '@' + ig : '';
-      msgEl.textContent = msg || ' ';
-
-      currentIndex = (currentIndex + 1) % items.length;
-    }
-
-    // เปลี่ยนภาพทุก 20 วินาที
-    setInterval(renderCurrent, 20000);
-
-    // โหลดข้อมูลครั้งแรก แล้วรีเฟรชข้อมูลจากชีตทุก 60 วินาที
-    fetchData();
-    setInterval(fetchData, 60000);
-  </script>
+  fetchData();
+</script>
 </body>
 </html>
